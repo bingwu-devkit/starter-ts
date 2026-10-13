@@ -9,6 +9,7 @@ Oxlint 负责代码检查和规则修复，Oxfmt 统一格式化仓库，tsdown 
 - Node.js ESM only，支持 Node.js 22.18+ 与 24.x
 - `packages/core`：可发布的 TypeScript 库
 - `examples/basic`：直接消费 workspace 包的最小示例
+- Zod 4 运行时校验，公开 schema 与 `parse` / `safeParse` 用法示例
 - 根目录统一维护 Oxlint、Oxfmt 与 TypeScript 公共配置
 - 根级 Oxlint 类型感知检查与 Oxfmt 统一格式化，子包无需重复配置
 - Turborepo 本地及 CI 缓存
@@ -88,6 +89,34 @@ pnpm check
 pnpm build
 pnpm --filter @scope/example-basic start
 ```
+
+## 运行时校验
+
+模板在 `pnpm-workspace.yaml` 的 catalog 中统一管理 Zod 版本，`packages/core` 将 Zod 声明为
+运行时依赖。核心包公开 `greetNameSchema`，`greet(name: string)` 内部复用同一个 schema：
+输入必须是字符串，去掉首尾空白后不能为空；保留名称内部的空格，不限制长度或字符。
+
+```ts
+import { greet, greetNameSchema } from '@scope/core'
+
+greet('  TypeScript  ') // 'Hello, TypeScript!'
+
+// parse 返回校验后的值，失败时抛出原生 ZodError。
+const name = greetNameSchema.parse('  TypeScript  ') // 'TypeScript'
+greet(name)
+
+// safeParse 返回成功或失败结果，校验失败不会抛错。
+const result = greetNameSchema.safeParse('   ')
+if (result.success) {
+  console.log(greet(result.data))
+} else {
+  console.log(result.error.issues)
+}
+```
+
+空字符串、纯空白及运行时传入的非字符串都会校验失败。`greet` 使用 `parse`，遇到这些输入会
+抛出原生 `ZodError`；需要处理外部输入而不抛错时，可先调用公开 schema 的 `safeParse`。
+从模板创建项目后，可以按业务需要修改 schema 的规则。
 
 ## 发布
 

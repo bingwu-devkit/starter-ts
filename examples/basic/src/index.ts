@@ -1,3 +1,9 @@
-import { greet } from '@scope/core'
+import { greet, greetNameSchema } from '@scope/core'
 
-console.log(greet('Turborepo'))
+const name = greetNameSchema.parse('  Turborepo  ')
+console.log(greet(name))
+
+const result = greetNameSchema.safeParse('   ')
+if (!result.success) {
+  console.log('Invalid greeting name:', result.error.issues)
+}
