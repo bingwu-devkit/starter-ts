@@ -1,8 +1,8 @@
 # starter-ts
 
 一个有明确工程取向的 TypeScript 库模板：使用 pnpm 管理 workspace，Turborepo 编排任务，
-Oxlint 负责代码检查和规则修复，Oxfmt 统一格式化仓库，tsdown 构建 ESM 包，Vitest 测试真实
-行为，Changesets 管理发布。
+Oxlint 负责代码检查和规则修复，Oxfmt 统一格式化仓库，Knip 检查未使用的代码和依赖，tsdown
+构建 ESM 包，Vitest 测试真实行为，Changesets 管理发布。
 
 ## 特性
 
@@ -12,6 +12,7 @@ Oxlint 负责代码检查和规则修复，Oxfmt 统一格式化仓库，tsdown 
 - Zod 4 运行时校验，公开 schema 与 `parse` / `safeParse` 用法示例
 - 根目录统一维护 Oxlint、Oxfmt 与 TypeScript 公共配置
 - 根级 Oxlint 类型感知检查与 Oxfmt 统一格式化，子包无需重复配置
+- 根级 Knip 检查所有 workspace 的未使用文件、导出和依赖，接入本地验证及 CI
 - Turborepo 本地及 CI 缓存
 - Changesets、npm Trusted Publishing 和 GitHub Release
 - Ubuntu、Windows 与 Node.js 22、24 的 CI 验证
@@ -76,9 +77,13 @@ pnpm check
 | `pnpm lint:fix`     | 使用根配置修复整个仓库的 lint 问题    |
 | `pnpm format`       | 使用根 Oxfmt 配置格式化整个仓库       |
 | `pnpm format:check` | 检查整个仓库的格式                    |
+| `pnpm knip`         | 检查未使用的文件、导出和依赖          |
 | `pnpm typecheck`    | 检查所有 workspace 的 TypeScript 类型 |
 | `pnpm test`         | 运行 Vitest 测试                      |
 | `pnpm check`        | 运行提交前的完整验证                  |
+
+Knip 从 `pnpm-workspace.yaml` 自动识别 workspace，通过内置插件读取构建、测试和工具配置。
+`pnpm check` 和 CI 的静态检查任务都会运行 Knip，发现未使用的文件、导出或依赖时检查失败。
 
 提交时，nano-staged 会使用根 `oxlint.config.ts` 修复暂存的 JavaScript/TypeScript 文件，再用
 根 `oxfmt.config.ts` 格式化所有匹配文件。

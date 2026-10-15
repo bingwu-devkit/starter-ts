@@ -17,7 +17,8 @@ function createCommands(filenames, { command, configName, extensions }) {
   return [`${command} -c ${quote(config)} ${files.map((file) => quote(file)).join(' ')}`]
 }
 
-export default ({ filenames }) => [
+// Knip evaluates this config without a staged-file list.
+export default ({ filenames = [] } = {}) => [
   ...createCommands(filenames, {
     command: 'oxlint --fix --no-error-on-unmatched-pattern',
     configName: 'oxlint.config.ts',
